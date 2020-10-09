@@ -16,7 +16,7 @@ import Typography from "@material-ui/core/Typography";
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { getAllBooks } from "../../actions/createBookAction";
+import { getAllBooks, searchBookName } from "../../actions/createBookAction";
 
 import axios from "axios";
 import { proxy } from "../../proxy";
@@ -37,12 +37,6 @@ const useStyles = makeStyles((theme) => ({
   table: {
     minWidth: 300,
   },
-  editIconColor: {
-    color: "#29b6f6",
-  },
-  deleteIconColor: {
-    color: "#900000",
-  },
   addUserButton: {
     color: "#900000",
   },
@@ -51,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
 function AllBook() {
   const classes = useStyles();
   const [bookInfo, setBookInfo] = React.useState([]);
-  const [book, setBooks] = React.useState([]);
+  // const [book, setBooks] = React.useState([]);
   const [searchBook, setSearchBook] = React.useState("");
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -84,18 +78,10 @@ function AllBook() {
   // setBooks(allBooksRecords);
   console.log(allBooksRecords);
 
-  // Search user name
+  // Search book name
   const handleChange = (bookName) => {
     setSearchBook(bookName);
-    axios
-      .get(`${proxy}/api/v1/books/${bookName}`)
-      .then((res) => {
-        //console.log(res.data.data);
-        setBooks(res.data.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    dispatch(searchBookName(bookName));
   };
 
   // Delete record from table
@@ -160,7 +146,7 @@ function AllBook() {
               // className={classes.table}
               aria-label="sticky table"
             >
-              <TableHead>
+              <TableHead style={{ backgroundColor: "#f2f2f2" }}>
                 <TableRow>
                   <TableCell>ID</TableCell>
                   <TableCell align="center">Book Name</TableCell>
@@ -175,7 +161,7 @@ function AllBook() {
                 {allBooksRecords
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row) => (
-                    <TableRow key={row._id}>
+                    <TableRow hover key={row._id}>
                       <TableCell component="th" scope="row">
                         {row._id}
                       </TableCell>
@@ -188,14 +174,14 @@ function AllBook() {
 
                       <TableCell align="center">
                         <Tooltip title="Edit info">
-                          <Edit className={classes.editIconColor} />
+                          <Edit />
                         </Tooltip>
                         <Tooltip
                           title="Delete info"
                           style={{ marginTop: "10px" }}
                           onClick={() => handleDeleteRecord(row._id)}
                         >
-                          <DeleteForever className={classes.deleteIconColor} />
+                          <DeleteForever />
                         </Tooltip>
                       </TableCell>
                     </TableRow>

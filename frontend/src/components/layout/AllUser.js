@@ -77,7 +77,7 @@ function AllUser(props) {
     //   .catch((err) => {
     //     console.log(err);
     //   });
-  }, []);
+  }, [props]);
 
   useEffect(() => {
     if (props.user) {
@@ -87,19 +87,9 @@ function AllUser(props) {
   }, [props]);
 
   // Search user name
-  const handleChange = (name) => {
-    console.log(name);
-    setSearchUser(name);
-    setUsers(props.user);
-    // axios
-    //   .get(`${proxy}/api/v1/user/${name}`)
-    //   .then((res) => {
-    //     //console.log(res.data.data);
-    //     setUsers(res.data.data);
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
+  const handleChange = (userName) => {
+    setSearchUser(userName);
+    props.searchUserName(userName);
   };
 
   return (
@@ -133,8 +123,8 @@ function AllUser(props) {
 
       <Paper className={classes.root}>
         <TableContainer className={classes.container}>
-          <Table stickyHeader aria-label="sticky table">
-            <TableHead>
+          <Table aria-label="sticky table">
+            <TableHead style={{ backgroundColor: "#f2f2f2" }}>
               <TableRow>
                 {columns.map((column) => (
                   <TableCell

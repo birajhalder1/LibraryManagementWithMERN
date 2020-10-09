@@ -13,6 +13,9 @@ export default function bookReducer(state = initialState.book, action) {
     // initialState.book = [...initialState.book, action.payload];
     // return action.payload;
 
+    case types.SEARCH_BOOK_NAME:
+      return action.payload;
+
     default:
       return state;
   }

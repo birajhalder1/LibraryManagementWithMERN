@@ -14,6 +14,7 @@ connectionDB();
 const book = require("./routes/books");
 const admin = require("./routes/admin");
 const user = require("./routes/user");
+const transaction = require("./routes/transaction");
 
 //Load express framework
 const app = express();
@@ -31,6 +32,7 @@ app.use(bodyParser.json());
 app.use("/api/v1/books", book);
 app.use("/api/v1/admin", admin);
 app.use("/api/v1/user", user);
+app.use("/api/v1/transaction", transaction);
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(

@@ -1,17 +1,14 @@
-const mongoose = require('mongoose');
+const express = require("express");
+const {
+  getAllUserTransactionRecords,
+  createSingleTransactionRecords,
+} = require("../controller/transaction");
 
-const transactionSchema = new mongoose.Schema({
-    userDetails: {
-        type: String
-    },
-    bookDetails: {
-        type: String
-    },
-    dueDateOfBook: {
-        type: String
-    },
-    returnStatement: {
-        type: String
-    }
-});
-module.exports = mongoose.model("Transaction", transactionSchema);
+const route = express.Router();
+
+route
+  .route("/")
+  .post(createSingleTransactionRecords)
+  .get(getAllUserTransactionRecords);
+
+module.exports = route;

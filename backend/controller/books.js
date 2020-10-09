@@ -1,4 +1,5 @@
 const Book = require("../models/Book");
+const User = require("../models/User");
 
 //@route    POST /api/v1/books
 //desc      Create all books
@@ -22,10 +23,16 @@ exports.createSingleBooks = async (req, res, next) => {
 //access    Private
 exports.getAllBooks = async (req, res, next) => {
   try {
+    // const bookSelect = req.body;
+    // console.log(bookSelect);
+
+    // let user = await User.find();
+    // console.log(user);
+
     const book = await Book.find();
     res.status(200).json({
       success: true,
-      // count: book.length,
+      count: book.length,
       data: book,
     });
   } catch (err) {

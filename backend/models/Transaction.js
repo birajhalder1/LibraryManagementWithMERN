@@ -1,17 +1,19 @@
 const moongoose = require("mongoose");
 
-const Book = require("./Book");
-const User = require("./User");
-
 const borrowSchema = new moongoose.Schema({
-  bookId: {
-    type: mongoose.Types.ObjectId,
-    ref: "Book",
+  name: {
+    type: String,
   },
   userId: {
-    type: mongoose.Types.ObjectId,
+    type: moongoose.Schema.Types.ObjectId,
     ref: "User",
   },
-  dueDateOfBook: Date,
+  transactionReturn: {
+    type: Boolean,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
+  },
 });
 module.exports = moongoose.model("Transaction", borrowSchema);

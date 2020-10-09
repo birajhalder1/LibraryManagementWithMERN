@@ -11,7 +11,7 @@ import axios from "axios";
 import { proxy } from "../../proxy";
 
 function Transaction() {
-  const [user, setUser] = React.useState([]);
+  // const [user, setUser] = React.useState([]);
   const dispatch = useDispatch();
   useEffect(() => {
     axios
@@ -24,7 +24,7 @@ function Transaction() {
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [dispatch]);
 
   let users = useSelector((state) => state.userReducer);
   console.log(users);

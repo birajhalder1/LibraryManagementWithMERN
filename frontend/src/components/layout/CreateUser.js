@@ -27,13 +27,15 @@ import { Edit, DeleteForever } from "@material-ui/icons";
 import Breadcrumbs from "@material-ui/core/Breadcrumbs";
 import Link from "@material-ui/core/Link";
 
+import * as utils from "../../utils";
+
 import axios from "axios";
 import { proxy } from "../../proxy";
 
 import {
   issueUser,
   searchUserName,
-  isBookAvailable,
+  // isBookAvailable,
   getAllUsers,
 } from "../../actions/createUserAction";
 
@@ -53,12 +55,7 @@ const useStyles = makeStyles((theme) => ({
   table: {
     minWidth: 300,
   },
-  // editIconColor: {
-  //   color: "#29b6f6",
-  // },
-  // deleteIconColor: {
-  //   color: "#900000",
-  // },
+
   addUserButton: {
     fontSize: 50,
     marginTop: 5,
@@ -68,6 +65,7 @@ const useStyles = makeStyles((theme) => ({
 function CreateUser(props) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
+  const [editButtonOpen, setEditButtonOpen] = React.useState(false);
   const [name, setName] = React.useState("");
   const [username, setUsername] = React.useState("");
   const [email, setEmail] = React.useState("");
@@ -78,8 +76,9 @@ function CreateUser(props) {
   const [bookName, setBookName] = React.useState([]);
   const [authorName, setAuthorName] = React.useState([]);
   const [userInfo, setUserInfo] = React.useState([]);
+  const [editUserInfo, setEditUserInfo] = React.useState([]);
   const [searchUser, setSearchUser] = React.useState("");
-  const [bookAvailability, setBookAvailability] = React.useState([]);
+  // const [bookAvailability] = React.useState([]);
   // const [inputBookAvailability, setInputBookAvailability] = React.useState([]);
 
   const [page, setPage] = React.useState(0);
@@ -105,28 +104,51 @@ function CreateUser(props) {
     props.getAllBooks();
 
     props.getAllUsers();
-    showBookAvailability();
-    allAuthorName();
+    // setEditUserInfo();
+    // showBookAvailability();
   }, []);
 
   useEffect(() => {
     if (props.user) {
-      // console.log(props.user);
       setUserInfo(props.user);
     }
-    // if (props.book && props.book.length > 0) {
-    //   let aBookNames = props.book.map((bookItem) => bookItem.bookName);
-    //   setBookName(aBookNames);
-    //   console.log(aBookNames);
 
-    //   let aAutharNames = props.book.map((bookItem) => bookItem.authorName);
-    //   setAuthorName(aAutharNames);
-    //   console.log(aAutharNames);
-    // }
+    if (props.book && props.book.length > 0) {
+      let aBookNames = props.book.map((bookItem) => ({
+        label: bookItem.bookName,
+        value: bookItem.bookName.toLowerCase(),
+      }));
+      // console.log(aBookNames);
+
+      setBookName(aBookNames);
+
+      let aAutharNames = props.book.map((bookItem) => ({
+        label: bookItem.authorName,
+        value: bookItem.authorName.toLowerCase(),
+      }));
+      setAuthorName(aAutharNames);
+    }
   }, [props]);
 
   const handleClickOpen = () => {
     setOpen(true);
+  };
+
+  const handleClickEdit = () => {
+    setEditButtonOpen(true);
+    axios
+      .get(`${proxy}/api/v1/user`)
+      .then((res) => {
+        // console.log(res.data.data);
+        setEditUserInfo(res.data.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const handleButtonClose = () => {
+    setEditButtonOpen(false);
   };
 
   const handleClose = () => {
@@ -152,46 +174,46 @@ function CreateUser(props) {
 
   const handleSubmit = () => {
     if (allFieldAreFilled) {
-      const insertData = {
-        name: name,
-        username: username,
-        email: email,
-        phone: phone,
-        // bookname: book._id,
-        book: bookName._id,
-        // author: author,
-      };
-      console.log(insertData);
-      // Set Data Post Request
-      props.issueUser(insertData);
-      handleClear();
-      setOpen(false);
+      let oBook = props.book.filter(
+        (oBook) => oBook.bookName === book && oBook.authorName === author
+      )[0];
+
+      console.log(oBook);
+      // let checkAvailable = oBook.filter((oBookCheck => oBookCheck.currentAvailability))
+
+      if (oBook === undefined ) {
+        alert("Not available");
+      } else {
+        if(oBook.currentAvailability > 0){
+          const insertData = {
+            name: name,
+            username: username,
+            email: email,
+            phone: phone,
+            book: oBook._id,
+          };
+          props.issueUser(insertData);
+          handleClear();
+          setOpen(false);
+          props.getAllUsers();
+        }else{
+          alert("Presently book is not available")
+        }
+        
+      }
     } else {
       alert("Please all field insert data");
     }
   };
 
   // Search user name
-  const handleChange = (name) => {
-    setSearchUser(name);
+  const handleChange = (userName) => {
+    setSearchUser(userName);
+    props.searchUserName(userName);
   };
 
   // Fetch book table for available book
-  const showBookAvailability = () => {};
-
-  // Fetch all author name in author field
-  const allAuthorName = () => {
-    axios
-      .get(`${proxy}/api/v1/books`)
-      .then((res) => {
-        // console.log(res.data.data);
-        setAuthorName(res.data.data);
-        setBookName(res.data.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+  // const showBookAvailability = () => {};
 
   // Delete record from table
   const handleDeleteRecord = (id) => {
@@ -210,6 +232,11 @@ function CreateUser(props) {
       .catch((err) => {
         console.log(err);
       });
+  };
+
+  // Update data
+  const handleUpdate = () => {
+    console.log("hiit");
   };
 
   return (
@@ -253,18 +280,19 @@ function CreateUser(props) {
           aria-labelledby="form-dialog-title"
         >
           <DialogTitle id="form-dialog-title">User Information</DialogTitle>
-          <ul>
+          {/* <ul>
             {bookAvailability.map((book) => (
               <li key={book._id}>
                 {book.bookName} is available only:- {book.currentAvailibility}
               </li>
             ))}
-          </ul>
+          </ul> */}
           <DialogContent>
             <DialogContentText>
               All information are mendatory for our official. So please type all
               information correctly.
             </DialogContentText>
+
             <TextField
               margin="dense"
               id="name"
@@ -305,26 +333,31 @@ function CreateUser(props) {
               options={bookName}
               onInputChange={(evemt, value) => {
                 setBook(value);
-                // console.log(value);
               }}
-              getOptionLabel={(option) => option.bookName}
+              getOptionLabel={(option) => option.label}
               fullWidth
               renderInput={(params) => (
-                <TextField {...params} label="Book Name" />
+                <TextField
+                  {...params}
+                  label={utils.oCreateUseri18nTxt.BOOK_NAME_TXT}
+                />
               )}
             />
-            {/* <Autocomplete
+            <Autocomplete
               id="author"
               options={authorName}
               onInputChange={(evemt, value) => {
                 setAuthor(value);
               }}
-              getOptionLabel={(option) => option.authorName}
+              getOptionLabel={(option) => option.label}
               fullWidth
               renderInput={(params) => (
-                <TextField {...params} label="Author Name" />
+                <TextField
+                  {...params}
+                  label={utils.oCreateUseri18nTxt.AUTHOR_NAME_TXT}
+                />
               )}
-            /> */}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose} color="primary">
@@ -347,7 +380,7 @@ function CreateUser(props) {
       >
         <TableContainer component={Paper}>
           <Table className={classes.table} aria-label="simple table">
-            <TableHead>
+            <TableHead style={{ backgroundColor: "#f2f2f2" }}>
               <TableRow>
                 <TableCell>ID</TableCell>
                 <TableCell align="center">Name</TableCell>
@@ -362,8 +395,8 @@ function CreateUser(props) {
             <TableBody>
               {userInfo
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row) => (
-                  <TableRow key={row._id}>
+                .map((row, index) => (
+                  <TableRow hover key={index}>
                     <TableCell component="th" scope="row">
                       {row._id}
                     </TableCell>
@@ -372,37 +405,123 @@ function CreateUser(props) {
                     <TableCell align="center">{row.email}</TableCell>
                     <TableCell align="center">{row.phone}</TableCell>
 
-                    <TableCell align="center">{row.book}</TableCell>
-                    <TableCell align="center">{row.author}</TableCell>
+                    <TableCell align="center">{row.book.bookName}</TableCell>
+                    <TableCell align="center">{row.book.authorName}</TableCell>
                     <TableCell align="center">
                       <Tooltip title="Edit info">
-                        <Edit className={classes.editIconColor} />
+                        <Edit
+                          // onClick={() => handleEdit()}
+                          onClick={handleClickEdit}
+                        />
                       </Tooltip>
                       <Tooltip
                         title="Delete info"
                         style={{ marginTop: "10px" }}
                         onClick={() => handleDeleteRecord(row._id)}
                       >
-                        <DeleteForever className={classes.deleteIconColor} />
+                        <DeleteForever />
                       </Tooltip>
-                      {/* <Button variant="outlined" color="primary">
-                      Update
-                    </Button> */}
-
-                      {/* <Button
-                      style={{ marginTop: "10px" }}
-                      variant="outlined"
-                      color="secondary"
-                      onClick={() => handleDeleteRecord(row._id)}
-                    >
-                      Delete
-                    </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}
             </TableBody>
           </Table>
         </TableContainer>
+
+        {/* Update table row */}
+        <div>
+          <Dialog
+            open={editButtonOpen}
+            onClose={handleButtonClose}
+            aria-labelledby="form-dialog-title"
+          >
+            <DialogTitle id="form-dialog-title">User Information</DialogTitle>
+            {/* <ul>
+            {bookAvailability.map((book) => (
+              <li key={book._id}>
+                {book.bookName} is available only:- {book.currentAvailibility}
+              </li>
+            ))}
+          </ul> */}
+            <DialogContent>
+              <DialogContentText>All information can update.</DialogContentText>
+
+              <TextField
+                margin="dense"
+                id="name"
+                label="Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                fullWidth
+              />
+              <TextField
+                margin="dense"
+                id="username"
+                label="User Name"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                fullWidth
+              />
+              <TextField
+                margin="dense"
+                id="email"
+                label="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                fullWidth
+              />
+              <TextField
+                margin="dense"
+                id="phone"
+                label="Phone Number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                type="number"
+                fullWidth
+              />
+
+              <Autocomplete
+                id="book"
+                options={bookName}
+                onInputChange={(evemt, value) => {
+                  setBook(value);
+                }}
+                getOptionLabel={(option) => option.label}
+                fullWidth
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={utils.oCreateUseri18nTxt.BOOK_NAME_TXT}
+                  />
+                )}
+              />
+              <Autocomplete
+                id="author"
+                options={authorName}
+                onInputChange={(evemt, value) => {
+                  setAuthor(value);
+                }}
+                getOptionLabel={(option) => option.label}
+                fullWidth
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={utils.oCreateUseri18nTxt.AUTHOR_NAME_TXT}
+                  />
+                )}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleButtonClose} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={() => handleUpdate()} color="primary">
+                Update
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </div>
         <TablePagination
           rowsPerPageOptions={[3, 10, 25, 100]}
           component="div"
@@ -421,7 +540,7 @@ CreateUser.propTypes = {
   issueUser: PropTypes.func.isRequired,
   getAllUsers: PropTypes.func.isRequired,
   getAllBooks: PropTypes.func.isRequired,
-  isBookAvailable: PropTypes.func.isRequired,
+  // isBookAvailable: PropTypes.func.isRequired,
   searchUserName: PropTypes.func.isRequired,
   user: PropTypes.array.isRequired,
   book: PropTypes.array.isRequired,
@@ -441,4 +560,5 @@ export default connect(mapStateToProps, {
   issueUser,
   getAllUsers,
   getAllBooks,
+  searchUserName,
 })(CreateUser);

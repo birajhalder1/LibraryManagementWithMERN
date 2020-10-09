@@ -7,12 +7,10 @@ const Book = require("../models/Book");
 exports.createSingleUserRecords = async (req, res, next) => {
   try {
     /**query to get book id */
-    // console.log(req.body);
-    // const bookId = await Book.findOne({
-    //   bookName: req.body.bookName,
-    //   authorName: req.body.authorName,
-    // });
-    // console.log(bookId._id);
+
+    // const bookSelect = Book.find({ currentAvailibility: { $gt: 0 } });
+    // console.log(bookSelect);
+
     const user = {
       name: req.body.name,
       username: req.body.username,
@@ -20,6 +18,7 @@ exports.createSingleUserRecords = async (req, res, next) => {
       phone: req.body.phone,
       book: req.body.book,
     };
+
     // Save to database
     let newUser = new User(user);
     newUser.save().then((result) => {
@@ -35,8 +34,11 @@ exports.createSingleUserRecords = async (req, res, next) => {
 //access    Private
 exports.getAllUserRecords = async (req, res, next) => {
   try {
-    const user = await User.find();
+    const user = await User.find()
+      .populate("book", "bookName authorName")
+      .sort({ _id: -1 });
     res.status(200).json({
+      count: user.length,
       success: true,
       data: user,
     });

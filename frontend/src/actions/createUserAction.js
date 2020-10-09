@@ -22,7 +22,6 @@ export function getAllUsers() {
       .get(`${proxy}/api/v1/user`)
       .then((data) => {
         return dispatch(getAllUserSuccess(data.data.data));
-        console.log(data);
       })
       .catch((err) => {
         throw err;
@@ -43,10 +42,10 @@ export function issueUser(insertData) {
   };
 }
 
-export function searchUserName(name) {
+export function searchUserName(userName) {
   return function (dispatch) {
     axios
-      .get(`${proxy}/api/v1/user/${name}`)
+      .get(`${proxy}/api/v1/user/${userName}`)
       .then((res) => {
         return dispatch(searchUserNameSuccess(res.data.data));
       })

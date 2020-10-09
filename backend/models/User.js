@@ -25,16 +25,6 @@ const UserSchema = new mongoose.Schema({
     ref: "Book",
   },
 
-  // book: String,
-  // author: String,
-  // books: {
-  //   book: [
-  //     {
-  //       bookName: String,
-  //       authorName: String,
-  //     },
-  //   ],
-  // },
   phone: {
     type: Number,
     required: [true, "Please add a phone number"],
